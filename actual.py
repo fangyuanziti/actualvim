@@ -6,7 +6,6 @@ from .view import ViewMeta
 from .vim import Vim, VISUAL_MODES
 
 
-
 class ActualVim(ViewMeta):
     def __init__(self, view):
         super().__init__(view)
@@ -68,7 +67,8 @@ class ActualVim(ViewMeta):
                     # we already have a panel
                     panel = vim.panel.panel
                     with Edit(panel) as edit:
-                        edit.replace(sublime.Region(0, panel.size()), vim.cmdline)
+                        edit.replace(sublime.Region(0, panel.size()),
+                                     vim.cmdline)
                 else:
                     # vim is prompting for input
                     row, col = (tty.row - 1, tty.col - 1)
@@ -109,6 +109,7 @@ class ActualVim(ViewMeta):
     def set_path(self, path):
         self.vim.set_path(path)
 
+
 class ActualKeypress(sublime_plugin.TextCommand):
     def run(self, edit, key):
         v = ActualVim.get(self.view, exact=False)
@@ -123,7 +124,7 @@ class ActualListener(sublime_plugin.EventListener):
     def on_load(self, view):
         ActualVim.get(view)
 
-    def on_post_text_command(self,view, command_name,args):
+    def on_post_text_command(self, view, command_name, args):
         if command_name == "drag_select":
             v = ActualVim.get(view, create=False)
             if v and v.actual:
@@ -136,6 +137,7 @@ class ActualListener(sublime_plugin.EventListener):
 
                 vim = v.vim
                 sel = sel[0]
+
                 def cursor(args):
                     buf, lnum, col, off = [int(a) for a in args.split(' ')]
                     # see if we changed selection on Sublime's side
@@ -170,8 +172,6 @@ class ActualListener(sublime_plugin.EventListener):
 
                 vim.get_cursor(cursor)
 
-
-
     def on_modified(self, view):
         v = ActualVim.get(view, create=False)
         if v:
@@ -187,6 +187,7 @@ class ActualListener(sublime_plugin.EventListener):
         if v:
             v.set_path(view.file_name())
 
+
 class ActualPanel:
     def __init__(self, actual):
         self.actual = actual
@@ -200,7 +201,9 @@ class ActualPanel:
 
     def show(self, char):
         window = self.view.window()
-        self.panel = window.show_input_panel('Vim', char, self.on_done, None, self.on_cancel)
+        self.panel = window.show_input_panel('Vim', char,
+                                             self.on_done, None,
+                                             self.on_cancel)
         settings = self.panel.settings()
         settings.set('actual_intercept', True)
         settings.set('actual_proxy', self.view.id())
